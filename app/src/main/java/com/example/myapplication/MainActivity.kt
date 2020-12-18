@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.SystemClock
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import java.text.ParseException
 import java.util.*
@@ -16,6 +17,7 @@ class MainActivity : Activity() {
     private var startButton: Button? = null
     private var pauseButton: Button? = null
     private var timerValue: TextView? = null
+    private var progressBar: ProgressBar? = null
     private var startTime = 0L
     private val customHandler = Handler()
     var timeInMilliseconds = 0L
@@ -25,6 +27,9 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         timerValue = findViewById<View>(R.id.timerValue) as TextView
+
+        progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
+
         startButton = findViewById<View>(R.id.startButton) as Button
         startButton!!.setOnClickListener {
             startTime = SystemClock.uptimeMillis()
@@ -46,26 +51,28 @@ class MainActivity : Activity() {
             val date = Date()
             val format = SimpleDateFormat("yyyy/MM/dd HH:mm:ssZ")
             var nn=format.format(date)
-            val st = "2020/12/10 15:00"
-            val en = "2020/12/18 21:00"
+            val st = "2020-12-10T15:00:00+09:00"
+            val en = "2020-12-18T12:00:00Z"
             var start=Date()
             var end=Date()
 
 
             try {
-                val forma = SimpleDateFormat("yyyy/MM/dd hh:mm")
+                val forma = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
                 start = forma.parse(st)
                 end = forma.parse(en)
 
             } catch (e: ParseException) {
                 e.printStackTrace()
             }
-            var dateTimeTo =start.getTime()
-            var dateTimeFrom= end.getTime()
-            var nd= date.getTime()
+            var dateTimeTo =start.time
+            var dateTimeFrom= end.time
+            var nd= date.time
             var dd= (dateTimeFrom-dateTimeTo)/1000
             var ds= (-dateTimeTo+nd)/1000
             var de= (dateTimeFrom-nd)/1000
+            var bar = ds*100/dd
+            if(bar>100){bar=100}
 
             var dds= (dd / 86400).toString() +"日" + ((dd / 3600) % 24).toString() +"時間"+
                     ((dd / 60) % 60).toString()+"分" //+((dd / 10) % 60) +"秒"
@@ -75,7 +82,10 @@ class MainActivity : Activity() {
                     ((de / 60) % 60).toString()+"分"//+((de / 10) % 60) +"秒"
 
             timerValue!!.text = nn + "\r\n" + start +"\r\n"+
-             end +"\r\n" + dds +"\r\n" + dss +"\r\n" + des
+             end +"\r\n" + dds +"\r\n" + dss +"\r\n" + des +"\r\n" + bar +"%"
+
+            val l= bar.toInt()
+            progressBar!!.setProgress(l);
             customHandler.postDelayed(this, 0)
         }
 
