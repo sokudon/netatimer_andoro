@@ -51,8 +51,9 @@ class MainActivity : Activity() {
             val date = Date()
             val format = SimpleDateFormat("yyyy/MM/dd HH:mm:ssZ")
             var nn=format.format(date)
-            val st = "2020-12-10T15:00:00+09:00"
-            val en = "2020-12-18T12:00:00Z"
+            //みりいべんと
+            val st = "2020-12-18T06:00:00Z"
+            val en = "2020-12-24T12:00:00Z"
             var start=Date()
             var end=Date()
 
@@ -72,7 +73,15 @@ class MainActivity : Activity() {
             var ds= (-dateTimeTo+nd)/1000
             var de= (dateTimeFrom-nd)/1000
             var bar = ds*100/dd
-            if(bar>100){bar=100}
+            if(ds<0){
+                ds=0
+                bar=0
+            }
+            if(de<0){
+                ds=dd
+                bar=100
+                de=0
+            }
 
             var dds= (dd / 86400).toString() +"日" + ((dd / 3600) % 24).toString() +"時間"+
                     ((dd / 60) % 60).toString()+"分" //+((dd / 10) % 60) +"秒"
@@ -81,8 +90,11 @@ class MainActivity : Activity() {
             var des= (de / 86400).toString() +"日" + ((de / 3600) % 24).toString() +"時間"+
                     ((de / 60) % 60).toString()+"分"//+((de / 10) % 60) +"秒"
 
-            timerValue!!.text = nn + "\r\n" + start +"\r\n"+
-             end +"\r\n" + dds +"\r\n" + dss +"\r\n" + des +"\r\n" + bar +"%"
+            var sts=format.format(start)
+            var ste=format.format(end)
+
+            timerValue!!.text = "現在:"+nn + "\r\n開始:" + sts +"\r\n終了:"+
+             ste +"\r\n期間:" + dds +"\r\n経過:" + dss +"\r\n残り:" + des +"\r\n進捗:" + bar +"%"
 
             val l= bar.toInt()
             progressBar!!.setProgress(l);
