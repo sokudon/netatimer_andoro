@@ -9,13 +9,23 @@ import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import okhttp3.*
+import org.json.JSONArray
+import java.io.IOException
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.text.ParseException
 import java.util.*
 
-
 class MainActivity : Activity() {
+    var ibemei="みりいべんと"
+    var st = "2020-12-18T06:00:00Z"
+    var en = "2020-12-24T12:00:00Z"
+    var googleapi="https://script.google.com/macros/s/AKfycbyQmmF6EGgRvfAfF8thzVnMNCRlJfh1dbYs_plQJ_9WwqzI4QR4lAjf/exec"
+
     private var startButton: Button? = null
     private var pauseButton: Button? = null
+    private var Button2: Button? = null
     private var timerValue: TextView? = null
     private var progressBar: ProgressBar? = null
     private var startTime = 0L
@@ -40,6 +50,34 @@ class MainActivity : Activity() {
             timeSwapBuff += timeInMilliseconds
             customHandler.removeCallbacks(updateTimerThread)
         }
+        Button2 = findViewById<View>(R.id.button2) as Button
+        Button2!!.setOnClickListener {
+
+            val request = Request.Builder().url(googleapi).build()
+            val client = OkHttpClient()
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                        var jsonst = response.body!!.string()
+                        val json = JSONArray(jsonst)
+                        //0しゃに、1でれ、2みり日、みりK、みりC、5さいどｍ、6もばます、7ぷろせｋ
+                        //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
+                        var a = json[5].toString()
+                        timerValue!!.text = a
+
+                        val json2 = JSONArray(a)
+                        st = json2[2].toString()
+                        en = json2[3].toString()
+                        ibemei = json2[0].toString()
+                    }
+                }
+            })
+        }
     }
 
     private val updateTimerThread: Runnable = object : Runnable {
@@ -51,9 +89,7 @@ class MainActivity : Activity() {
             val date = Date()
             val format = SimpleDateFormat("yyyy/MM/dd HH:mm:ssZ")
             var nn=format.format(date)
-            //みりいべんと
-            val st = "2020-12-18T06:00:00Z"
-            val en = "2020-12-24T12:00:00Z"
+
             var start=Date()
             var end=Date()
 
@@ -64,7 +100,13 @@ class MainActivity : Activity() {
                 end = forma.parse(en)
 
             } catch (e: ParseException) {
-                e.printStackTrace()
+                val sw = StringWriter()
+                val pw = PrintWriter(sw)
+                e.printStackTrace(pw)
+                pw.flush()
+                val str: String = sw.toString()
+                timerValue!!.text = str
+                    return
             }
             var dateTimeTo =start.time
             var dateTimeFrom= end.time
@@ -83,33 +125,30 @@ class MainActivity : Activity() {
                 de=0
             }
 
-            var dds= (dd / 86400).toString() +"日" + ((dd / 3600) % 24).toString() +"時間"+
-                    ((dd / 60) % 60).toString()+"分" //+((dd / 10) % 60) +"秒"
-            var dss= (ds / 86400).toString() +"日" + ((ds / 3600) % 24).toString() +"時間"+
-                    ((ds / 60) % 60).toString()+"分"//+((ds / 10) % 60) +"秒"
-            var des= (de / 86400).toString() +"日" + ((de / 3600) % 24).toString() +"時間"+
-                    ((de / 60) % 60).toString()+"分"//+((de / 10) % 60) +"秒"
+            var dds=  dtime(dd)
+            var dss=  dtime(ds)
+            var des= dtime(de)
 
             var sts=format.format(start)
             var ste=format.format(end)
 
-            timerValue!!.text = "現在:"+nn + "\r\n開始:" + sts +"\r\n終了:"+
-             ste +"\r\n期間:" + dds +"\r\n経過:" + dss +"\r\n残り:" + des +"\r\n進捗:" + bar +"%"
+
+            timerValue!!.text = "イベ:"+ibemei+"\r\n現在:"+nn + "\r\n開始:" + sts +"\r\n終了:"+
+                    ste +"\r\n期間:" + dds +"\r\n経過:" + dss +"\r\n残り:" + des +"\r\n進捗:" + bar +"%"
 
             val l= bar.toInt()
             progressBar!!.setProgress(l);
             customHandler.postDelayed(this, 0)
         }
 
-        //fun dtime(dt){
-        //        if(dt<0) {return "0日0時間0分"}
-        // dt=Math.abs(dt)
-        //var minutes  = Math.floor((dt / 60) % 60)
-        //var hours    = Math.floor((dt / 3600) % 24)
-        //var days     = Math.floor(dt / 86400)
-        //var tmp = days +"日" +hours+"時間"+minutes +"分"
-        //return tmp
-        //}
+        fun dtime(dt: Long):String{
+            if(dt<0) {return "0日0時間0分"}
+            var minutes  = ((dt / 60) % 60)
+            var hours    = ((dt / 3600) % 24)
+            var days     = (dt / 86400)
+            var timest = days.toString() +"日" +hours.toString()+"時間"+minutes.toString() +"分"
+            return timest
+        }
 
     }
 
