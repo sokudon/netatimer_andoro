@@ -6,8 +6,8 @@
 
     <TextView
         android:id="@+id/timerValue"
-        android:layout_width="400dp"
-        android:layout_height="251dp"
+        android:layout_width="match_parent"
+        android:layout_height="313dp"
         android:layout_above="@+id/pauseButton"
         android:layout_marginBottom="18dp"
         android:text="@string/timerVal"
@@ -38,6 +38,7 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="389dp"
         android:layout_height="60dp"
+        android:layout_below="@id/button2"
         android:background="@android:drawable/divider_horizontal_dark"
         android:indeterminate="false"
         android:max="100"
@@ -45,11 +46,11 @@
 
     <Button
         android:id="@+id/button2"
-        android:layout_width="wrap_content"
+        android:layout_width="127dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/startButton"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="false"
-        android:text="Button" />
+        android:text="GetJSON" />
 
 </RelativeLayout>

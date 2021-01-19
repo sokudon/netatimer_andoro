@@ -67,13 +67,14 @@ class MainActivity : Activity() {
                         val json = JSONArray(jsonst)
                         //0しゃに、1でれ、2みり日、みりK、みりC、5さいどｍ、6もばます、7ぷろせｋ
                         //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
-                        var a = json[5].toString()
+                        var a = json[7].toString()//でふぉぷろせか
                         timerValue!!.text = a
 
                         val json2 = JSONArray(a)
                         st = json2[2].toString()
                         en = json2[3].toString()
-                        ibemei = json2[0].toString()
+                       var game = "["+json2[1].toString() +"]"
+                        ibemei = game + json2[0].toString()
                     }
                 }
             })
@@ -104,7 +105,10 @@ class MainActivity : Activity() {
                 val pw = PrintWriter(sw)
                 e.printStackTrace(pw)
                 pw.flush()
-                val str: String = sw.toString()
+                var str: String = sw.toString()
+                if(en==""){
+                    str= "終了時間が不明です\r\n" + str
+                }
                 timerValue!!.text = str
                     return
             }
@@ -133,7 +137,7 @@ class MainActivity : Activity() {
             var ste=format.format(end)
 
 
-            timerValue!!.text = "イベ:"+ibemei+"\r\n現在:"+nn + "\r\n開始:" + sts +"\r\n終了:"+
+            timerValue!!.text = ibemei+"\r\n現在:"+nn + "\r\n開始:" + sts +"\r\n終了:"+
                     ste +"\r\n期間:" + dds +"\r\n経過:" + dss +"\r\n残り:" + des +"\r\n進捗:" + bar +"%"
 
             val l= bar.toInt()
