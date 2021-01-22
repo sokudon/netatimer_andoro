@@ -1,6 +1,7 @@
 package com.example.myapplication
 //https://examples.javacodegeeks.com/android/core/os/handler/android-timer-example/
 import android.app.Activity
+import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.os.Handler
@@ -17,7 +18,9 @@ import java.io.StringWriter
 import java.text.ParseException
 import java.util.*
 
+
 class MainActivity : Activity() {
+    var game="[ミリシタ]"
     var ibemei="みりいべんと"
     var st = "2020-12-18T06:00:00Z"
     var en = "2020-12-24T12:00:00Z"
@@ -36,6 +39,8 @@ class MainActivity : Activity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        load()
+
         timerValue = findViewById<View>(R.id.timerValue) as TextView
 
         progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
@@ -52,34 +57,171 @@ class MainActivity : Activity() {
         }
         Button2 = findViewById<View>(R.id.button2) as Button
         Button2!!.setOnClickListener {
-
-            val request = Request.Builder().url(googleapi).build()
-            val client = OkHttpClient()
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    response.use {
-                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
-                        var jsonst = response.body!!.string()
-                        val json = JSONArray(jsonst)
-                        //0しゃに、1でれ、2みり日、みりK、みりC、5さいどｍ、6もばます、7ぷろせｋ
-                        //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
-                        var a = json[7].toString()//でふぉぷろせか
-                        timerValue!!.text = a
-
-                        val json2 = JSONArray(a)
-                        st = json2[2].toString()
-                        en = json2[3].toString()
-                       var game = "["+json2[1].toString() +"]"
-                        ibemei = game + json2[0].toString()
-                    }
-                }
-            })
+             getgoogleapi()
+             //getmobamasuapi()
+             //getmatsuriapi("ko")// 日jaかなし  韓ko  香港zh
         }
     }
+
+    fun getgoogleapi(){
+        val request = Request.Builder().url(googleapi).build()
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(
+                object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        val sw = StringWriter()
+                        val pw = PrintWriter(sw)
+                        e.printStackTrace(pw)
+                        pw.flush()
+                        var str: String = sw.toString()
+                        timerValue!!.text = str
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        response.use {
+                            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                            var jsonst = response.body!!.string()
+                            val json = JSONArray(jsonst)
+                            //0しゃに、1でれ、2みり日、みりK、みりC、5さいどｍ、6もばます、7ぷろせｋ
+                            //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
+                            var a = json[7].toString()//でふぉぷろせか
+                            timerValue!!.text = a
+
+                            val json2 = JSONArray(a)
+                            st = json2[2].toString()
+                            en = json2[3].toString()
+                            game = "[" + json2[1].toString() + "]"
+                            ibemei = game + json2[0].toString()
+                            save()
+                        }
+                    }
+                }
+        )
+
+
+
+    }
+
+    fun load(){
+        val pref = getSharedPreferences("timerini", MODE_PRIVATE)
+        game =pref.getString("game",game).toString()
+        st   = pref.getString("st",st).toString()
+        en   = pref.getString("en", en).toString()
+        ibemei = pref.getString("ibe", ibemei).toString()
+
+    }
+
+    fun save(){
+        val pref = getSharedPreferences("timerini", MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = pref.edit()
+        editor.putString("game", game)
+        editor.putString("st", st)
+        editor.putString("en", en)
+        editor.putString("ibe", ibemei)
+        editor.commit()
+    }
+
+
+/*
+//びるどしないので(),他サイトさまのapi使う場合
+    fun gettoday():String{
+        val today = Date()
+        return SimpleDateFormat("yyyy-MM-dd").format(today)
+    }
+
+    fun getmobamasuapi(){
+        var mobaapi="https://pink-check.school/api/v2/events/?time=" +gettoday() //"2022-02-28" //gettoday()
+        val request = Request.Builder().url(mobaapi).build()
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(
+                object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        e.printStackTrace()
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        response.use {
+                            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                            var jsonst = response.body!!.string()
+                            val json = JSONObject(jsonst)
+
+                            //content[0]/detail/beginDateTime endDateTime
+                            var content = json.getString("content")
+                            var czrero = JSONArray(content)
+
+                            game = "[モバマス]"
+
+                            if(czrero.toString()=="[]"){
+                                st=""
+                                en=""
+                                timerValue!!.text = json.toString()
+                                return
+                            }
+
+                            val jsond = JSONObject(czrero[0].toString())
+
+                            var detail = jsond.getString("detail")
+                            var dzero = JSONArray(detail)
+                            val jsontime = JSONObject(dzero[0].toString())
+
+                            timerValue!!.text = jsontime.toString()
+
+                            st = jsontime.getString("beginDateTime")
+                            en = jsontime.getString("endDateTime")
+                            ibemei = game + jsond.getString("name")
+                        }
+                    }
+                }
+        )
+
+
+
+    }
+
+    fun getmatsuriapi(country : String){
+        var url = country+"/"
+        var mobaapi="https://api.matsurihi.me/mltd/v1/"+url+"events/?at=" +gettoday() //"2021-01-17" //gettoday()
+        val request = Request.Builder().url(mobaapi).build()
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(
+                object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        e.printStackTrace()
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        response.use {
+                            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                            var jsonst = response.body!!.string()
+                            val json = JSONArray(jsonst)
+
+                            game = "[ミリシタ]"
+                            //[0]/schedule/beginDate endDate
+                            if(json.toString()=="[]"){
+                                st=""
+                                en=""
+                                timerValue!!.text = json.toString()
+                                return
+                            }
+
+                            val jsond = JSONObject(json[0].toString())
+                            var schedule = jsond.getString("schedule")
+                            val jsontime = JSONObject(schedule.toString())
+
+                            st = jsontime.getString("beginDate")
+                            en = jsontime.getString("endDate")
+                            timerValue!!.text = jsontime.toString()
+
+                            ibemei = game + jsond.getString("name")
+                        }
+                    }
+                }
+        )
+
+
+
+    }
+*/
 
     private val updateTimerThread: Runnable = object : Runnable {
         override fun run() {
@@ -94,7 +236,6 @@ class MainActivity : Activity() {
             var start=Date()
             var end=Date()
 
-
             try {
                 val forma = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
                 start = forma.parse(st)
@@ -106,10 +247,13 @@ class MainActivity : Activity() {
                 e.printStackTrace(pw)
                 pw.flush()
                 var str: String = sw.toString()
-                if(en==""){
+                if(st==""){
+                    str= "開催中のイベントはありません\r\n" + str
+                }
+                else if(en==""){
                     str= "終了時間が不明です\r\n" + str
                 }
-                timerValue!!.text = str
+                timerValue!!.text = game +"エラー\r\n"+str
                     return
             }
             var dateTimeTo =start.time
@@ -118,7 +262,13 @@ class MainActivity : Activity() {
             var dd= (dateTimeFrom-dateTimeTo)/1000
             var ds= (-dateTimeTo+nd)/1000
             var de= (dateTimeFrom-nd)/1000
-            var bar = ds*100/dd
+            var bar:Long=0
+            if(dateTimeFrom==dateTimeTo){
+                bar = 100
+            }
+            else {
+                bar = ds * 100 / dd
+            }
             if(ds<0){
                 ds=0
                 bar=0
