@@ -1,20 +1,23 @@
 package com.example.myapplication
 //https://examples.javacodegeeks.com/android/core/os/handler/android-timer-example/
+import android.R.id.message
 import android.app.Activity
+import android.content.Intent
 import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
+import android.icu.util.TimeZone
 import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock
+import android.provider.CalendarContract
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import okhttp3.*
 import org.json.JSONArray
-import java.io.IOException
-import java.io.PrintWriter
-import java.io.StringWriter
+import java.io.*
+import java.lang.Exception
 import java.text.ParseException
 import java.util.*
 
@@ -29,6 +32,7 @@ class MainActivity : Activity() {
     private var startButton: Button? = null
     private var pauseButton: Button? = null
     private var Button2: Button? = null
+    private var ICAL: Button? = null
     private var timerValue: TextView? = null
     private var progressBar: ProgressBar? = null
     private var startTime = 0L
@@ -61,6 +65,38 @@ class MainActivity : Activity() {
              //getmobamasuapi()
              //getmatsuriapi("ko")// 日jaかなし  韓ko  香港zh
         }
+        ICAL = findViewById<View>(R.id.ical) as Button
+        ICAL!!.setOnClickListener {
+            icalender()
+        }
+    }
+
+    fun icalender(){
+
+        try {
+            var start=Date()
+            var end=Date()
+
+            val forma = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
+            start = forma.parse(st)
+            end = forma.parse(en)
+
+            //"vnd.android.cursor.dir/event"
+            //https://developer.android.com/guide/topics/providers/calendar-provider?hl=ja&authuser=1
+            val intent = Intent(Intent.ACTION_INSERT).apply {
+                data = CalendarContract.Events.CONTENT_URI
+                putExtra(CalendarContract.Events.TITLE, ibemei)
+                putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, start.time)
+                putExtra(CalendarContract.EXTRA_EVENT_END_TIME, end.time)
+            }
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            }
+
+        } catch (e: ParseException) {
+            timerValue!!.text =elog(e)
+        }
+
     }
 
     fun getgoogleapi(){
@@ -102,10 +138,18 @@ class MainActivity : Activity() {
 
     }
 
+    fun elog(e: Exception):String{
+        val sw = StringWriter()
+        val pw = PrintWriter(sw)
+        e.printStackTrace(pw)
+        pw.flush()
+            return   sw.toString()
+    }
+
     fun load(){
         val pref = getSharedPreferences("timerini", MODE_PRIVATE)
-        game =pref.getString("game",game).toString()
-        st   = pref.getString("st",st).toString()
+        game =pref.getString("game", game).toString()
+        st   = pref.getString("st", st).toString()
         en   = pref.getString("en", en).toString()
         ibemei = pref.getString("ibe", ibemei).toString()
 
@@ -242,18 +286,16 @@ class MainActivity : Activity() {
                 end = forma.parse(en)
 
             } catch (e: ParseException) {
-                val sw = StringWriter()
-                val pw = PrintWriter(sw)
-                e.printStackTrace(pw)
-                pw.flush()
-                var str: String = sw.toString()
+
+                var str: String = elog(e)
+                timerValue!!.text = game +"エラー\r\n"+str
                 if(st==""){
                     str= "開催中のイベントはありません\r\n" + str
                 }
                 else if(en==""){
                     str= "終了時間が不明です\r\n" + str
                 }
-                timerValue!!.text = game +"エラー\r\n"+str
+                timerValue!!.text =str
                     return
             }
             var dateTimeTo =start.time
