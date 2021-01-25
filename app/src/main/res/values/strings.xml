@@ -7,4 +7,14 @@
     <string name="timerVal">00:00:00</string>
     <string name="pauseButtonLabel">Pause</string>
     <string name="startButtonLabel">Start</string>
+    <string-array name="list">
+        <item>シャニマス</item>
+        <item>デレステ</item>
+        <item>ミリシタ</item>
+        <item>ミリシタ韓国</item>
+        <item>ミリシタ台湾</item>
+        <item>サイドM</item>
+        <item>モバマス</item>
+        <item>プロセカ</item>
+    </string-array>
 </resources>

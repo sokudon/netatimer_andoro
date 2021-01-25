@@ -1,11 +1,9 @@
 package com.example.myapplication
 //https://examples.javacodegeeks.com/android/core/os/handler/android-timer-example/
-import android.R.id.message
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
-import android.icu.util.TimeZone
 import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock
@@ -13,11 +11,11 @@ import android.provider.CalendarContract
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.Spinner
 import android.widget.TextView
 import okhttp3.*
 import org.json.JSONArray
 import java.io.*
-import java.lang.Exception
 import java.text.ParseException
 import java.util.*
 
@@ -27,6 +25,7 @@ class MainActivity : Activity() {
     var ibemei="みりいべんと"
     var st = "2020-12-18T06:00:00Z"
     var en = "2020-12-24T12:00:00Z"
+    var comboindex =7
     var googleapi="https://script.google.com/macros/s/AKfycbyQmmF6EGgRvfAfF8thzVnMNCRlJfh1dbYs_plQJ_9WwqzI4QR4lAjf/exec"
 
     private var startButton: Button? = null
@@ -46,7 +45,6 @@ class MainActivity : Activity() {
         load()
 
         timerValue = findViewById<View>(R.id.timerValue) as TextView
-
         progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
 
         startButton = findViewById<View>(R.id.startButton) as Button
@@ -116,11 +114,16 @@ class MainActivity : Activity() {
                     override fun onResponse(call: Call, response: Response) {
                         response.use {
                             if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                            try {
                             var jsonst = response.body!!.string()
                             val json = JSONArray(jsonst)
                             //0しゃに、1でれ、2みり日、みりK、みりC、5さいどｍ、6もばます、7ぷろせｋ
                             //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
-                            var a = json[7].toString()//でふぉぷろせか
+                            var cm = findViewById < View >(R.id.spinner) as Spinner
+                            comboindex = cm.getSelectedItemPosition()
+
+                            var a = json[comboindex].toString()//でふぉぷろせか
                             timerValue!!.text = a
 
                             val json2 = JSONArray(a)
@@ -129,6 +132,11 @@ class MainActivity : Activity() {
                             game = "[" + json2[1].toString() + "]"
                             ibemei = game + json2[0].toString()
                             save()
+                            }
+                            catch (e: ParseException) {
+                                timerValue!!.text =elog(e)
+                            }
+
                         }
                     }
                 }
@@ -152,7 +160,9 @@ class MainActivity : Activity() {
         st   = pref.getString("st", st).toString()
         en   = pref.getString("en", en).toString()
         ibemei = pref.getString("ibe", ibemei).toString()
-
+        comboindex = pref.getInt("combo", comboindex)
+        var cm = findViewById < View >(R.id.spinner) as Spinner
+        cm.setSelection(comboindex)
     }
 
     fun save(){
@@ -162,6 +172,7 @@ class MainActivity : Activity() {
         editor.putString("st", st)
         editor.putString("en", en)
         editor.putString("ibe", ibemei)
+        editor.putInt("combo", comboindex)
         editor.commit()
     }
 
