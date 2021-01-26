@@ -8,6 +8,8 @@
     <string name="pauseButtonLabel">Pause</string>
     <string name="startButtonLabel">Start</string>
     <string-array name="list">
+        <item>プロセカ</item>
+        <item>ポプマス</item>
         <item>シャニマス</item>
         <item>デレステ</item>
         <item>ミリシタ</item>
@@ -15,6 +17,5 @@
         <item>ミリシタ台湾</item>
         <item>サイドM</item>
         <item>モバマス</item>
-        <item>プロセカ</item>
     </string-array>
 </resources>

@@ -25,7 +25,8 @@ class MainActivity : Activity() {
     var ibemei="みりいべんと"
     var st = "2020-12-18T06:00:00Z"
     var en = "2020-12-24T12:00:00Z"
-    var comboindex =7
+    //ぷろせｋ,ぽぷます、しゃに、でれ、みり日、みりK、みりC、さいどｍ、もばます
+    var comboindex =0
     var googleapi="https://script.google.com/macros/s/AKfycbyQmmF6EGgRvfAfF8thzVnMNCRlJfh1dbYs_plQJ_9WwqzI4QR4lAjf/exec"
 
     private var startButton: Button? = null
@@ -118,7 +119,6 @@ class MainActivity : Activity() {
                             try {
                             var jsonst = response.body!!.string()
                             val json = JSONArray(jsonst)
-                            //0しゃに、1でれ、2みり日、みりK、みりC、5さいどｍ、6もばます、7ぷろせｋ
                             //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
                             var cm = findViewById < View >(R.id.spinner) as Spinner
                             comboindex = cm.getSelectedItemPosition()
