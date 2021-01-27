@@ -109,7 +109,7 @@ class MainActivity : Activity() {
                         e.printStackTrace(pw)
                         pw.flush()
                         var str: String = sw.toString()
-                        timerValue!!.text = str
+                        //timerValue!!.text = str
                     }
 
                     override fun onResponse(call: Call, response: Response) {
@@ -124,7 +124,7 @@ class MainActivity : Activity() {
                             comboindex = cm.getSelectedItemPosition()
 
                             var a = json[comboindex].toString()//でふぉぷろせか
-                            timerValue!!.text = a
+                            //timerValue!!.text = a
 
                             val json2 = JSONArray(a)
                             st = json2[2].toString()
@@ -134,7 +134,7 @@ class MainActivity : Activity() {
                             save()
                             }
                             catch (e: ParseException) {
-                                timerValue!!.text =elog(e)
+                                //timerValue!!.text =elog(e)
                             }
 
                         }
