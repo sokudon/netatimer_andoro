@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.SystemClock
@@ -93,7 +94,12 @@ class MainActivity : Activity() {
             }
 
         } catch (e: ParseException) {
-            timerValue!!.text =elog(e)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                timerValue!!.text =elog(e)
+            }
+            else{
+                e.printStackTrace()
+            }
         }
 
     }
@@ -104,12 +110,12 @@ class MainActivity : Activity() {
         client.newCall(request).enqueue(
                 object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
-                        val sw = StringWriter()
-                        val pw = PrintWriter(sw)
-                        e.printStackTrace(pw)
-                        pw.flush()
-                        var str: String = sw.toString()
-                        //timerValue!!.text = str
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            timerValue!!.text =elog(e)
+                        }
+                        else{
+                            e.printStackTrace()
+                        }
                     }
 
                     override fun onResponse(call: Call, response: Response) {
@@ -124,7 +130,9 @@ class MainActivity : Activity() {
                             comboindex = cm.getSelectedItemPosition()
 
                             var a = json[comboindex].toString()//でふぉぷろせか
-                            //timerValue!!.text = a
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            timerValue!!.text = a
+                             }
 
                             val json2 = JSONArray(a)
                             st = json2[2].toString()
@@ -134,7 +142,12 @@ class MainActivity : Activity() {
                             save()
                             }
                             catch (e: ParseException) {
-                                //timerValue!!.text =elog(e)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    timerValue!!.text =elog(e)
+                                }
+                                else{
+                                    e.printStackTrace()
+                                }
                             }
 
                         }
@@ -299,14 +312,13 @@ class MainActivity : Activity() {
             } catch (e: ParseException) {
 
                 var str: String = elog(e)
-                timerValue!!.text = game +"エラー\r\n"+str
                 if(st==""){
                     str= "開催中のイベントはありません\r\n" + str
                 }
                 else if(en==""){
                     str= "終了時間が不明です\r\n" + str
                 }
-                timerValue!!.text =str
+                timerValue!!.text =  game +"エラー\r\n"+str
                     return
             }
             var dateTimeTo =start.time
