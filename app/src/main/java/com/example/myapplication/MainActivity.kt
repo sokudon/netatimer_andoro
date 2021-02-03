@@ -10,10 +10,7 @@ import android.os.Handler
 import android.os.SystemClock
 import android.provider.CalendarContract
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.Spinner
-import android.widget.TextView
+import android.widget.*
 import okhttp3.*
 import org.json.JSONArray
 import java.io.*
@@ -26,6 +23,7 @@ class MainActivity : Activity() {
     var ibemei="みりいべんと"
     var st = "2020-12-18T06:00:00Z"
     var en = "2020-12-24T12:00:00Z"
+    var ibejson = "" //jsonキャッシュ
     //ぷろせｋ,ぽぷます、しゃに、でれ、みり日、みりK、みりC、さいどｍ、もばます
     var comboindex =0
     var googleapi="https://script.google.com/macros/s/AKfycbyQmmF6EGgRvfAfF8thzVnMNCRlJfh1dbYs_plQJ_9WwqzI4QR4lAjf/exec"
@@ -63,11 +61,34 @@ class MainActivity : Activity() {
         Button2!!.setOnClickListener {
              getgoogleapi()
              //getmobamasuapi()
-             //getmatsuriapi("ko")// 日jaかなし  韓ko  香港zh
+             //getmatsuriapi("ko")// 日ja  韓ko  香港zh
         }
         ICAL = findViewById<View>(R.id.ical) as Button
         ICAL!!.setOnClickListener {
             icalender()
+        }
+        var cm = findViewById<View>(R.id.spinner) as Spinner
+
+        cm.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(adapterView: AdapterView<*>?, view: View, i: Int, l: Long) {
+                    try {
+                       if(ibejson!=""){
+                           parsejson(ibejson)
+                        }
+                    }
+                    catch (e: ParseException) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            timerValue!!.text =elog(e)
+                        }
+                        else{
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+            override fun onNothingSelected(adapterView: AdapterView<*>?) {
+                return
+            }
         }
     }
 
@@ -104,6 +125,23 @@ class MainActivity : Activity() {
 
     }
 
+    fun parsejson(js :String){
+        val json = JSONArray(js)
+        var cm = findViewById<View>(R.id.spinner) as Spinner
+        comboindex = cm.getSelectedItemPosition()
+
+        var usejsondata = json[comboindex].toString()//でふぉぷろせか
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            timerValue!!.text = usejsondata
+        }
+
+        val json2 = JSONArray(usejsondata)
+        st = json2[2].toString()
+        en = json2[3].toString()
+        game = "[" + json2[1].toString() + "]"
+        ibemei = game + json2[0].toString()
+    }
+
     fun getgoogleapi(){
         val request = Request.Builder().url(googleapi).build()
         val client = OkHttpClient()
@@ -124,21 +162,9 @@ class MainActivity : Activity() {
 
                             try {
                             var jsonst = response.body!!.string()
-                            val json = JSONArray(jsonst)
-                            //["【復刻】Catch the shiny tail?","シャニマス","2021-01-22T15:00:00+09:00","2021-01-31T15:00:00+09:00"]
-                            var cm = findViewById < View >(R.id.spinner) as Spinner
-                            comboindex = cm.getSelectedItemPosition()
 
-                            var a = json[comboindex].toString()//でふぉぷろせか
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            timerValue!!.text = a
-                             }
-
-                            val json2 = JSONArray(a)
-                            st = json2[2].toString()
-                            en = json2[3].toString()
-                            game = "[" + json2[1].toString() + "]"
-                            ibemei = game + json2[0].toString()
+                            ibejson=jsonst
+                            parsejson(jsonst)
                             save()
                             }
                             catch (e: ParseException) {
@@ -173,8 +199,9 @@ class MainActivity : Activity() {
         st   = pref.getString("st", st).toString()
         en   = pref.getString("en", en).toString()
         ibemei = pref.getString("ibe", ibemei).toString()
+        ibejson = pref.getString("ibejson", ibejson).toString()
         comboindex = pref.getInt("combo", comboindex)
-        var cm = findViewById < View >(R.id.spinner) as Spinner
+        var cm = findViewById<View>(R.id.spinner) as Spinner
         cm.setSelection(comboindex)
     }
 
@@ -186,6 +213,7 @@ class MainActivity : Activity() {
         editor.putString("en", en)
         editor.putString("ibe", ibemei)
         editor.putInt("combo", comboindex)
+        editor.putString("ibejson", ibejson)
         editor.commit()
     }
 
